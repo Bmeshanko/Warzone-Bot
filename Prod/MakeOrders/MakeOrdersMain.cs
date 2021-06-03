@@ -20,8 +20,6 @@ namespace WarLight.Shared.AI.Prod.MakeOrders
             this.Orders = new OrdersManager(Bot);
             this.IncomeTracker = new PlayerIncomeTracker(Bot.EffectiveIncome, Bot.Map);
 
-            this.UpdateEffectiveIncome();
-
         }
 
         public List<GameOrder> Go()

@@ -72,7 +72,9 @@ namespace WarLight.Shared.AI.Prime.Main
 
         public List<GameOrder> GetOrders()
         {
-            return new Prod.BotMain(false).GetOrders();
+            Prod.BotMain bot = new Prod.BotMain(false);
+            Prod.MakeOrders.MakeOrdersMain orders = new Prod.MakeOrders.MakeOrdersMain(bot);
+            return orders.Go();
         }
 
         public GamePlayer GamePlayerReference
