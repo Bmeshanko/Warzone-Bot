@@ -15,9 +15,15 @@ namespace WarLight.Shared.AI.Prime.Picks
 
             int value = bot.BonusValue(bonusID);
             int territories = bot.NumTerritories(bonusID);
+
+            EfficiencyCalculator ec = new EfficiencyCalculator();
+            int turnsForBonus = ec.TurnsForBonus(bot, terrID, bonusID);
+
+            float weight = 1000;
+            weight *= (float)Math.Pow(((1 / (float)(territories - value))), 4);
+            weight *= (float)territories / (float)value;
+            weight *= (float)Math.Pow(turnsForBonus, -0.5);
             
-            float weight = (float)Math.Pow(((1 / (float)(territories - value))), 4);
-            weight *= (float)territories / (float)value * 1000;
 
             if (hasWasteland(bot, bonusID, terrID)) weight = 0;
 

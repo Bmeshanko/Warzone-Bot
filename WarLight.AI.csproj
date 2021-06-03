@@ -88,7 +88,7 @@
     <Compile Include="Cowzow\Move\BotOrder.cs" />
     <Compile Include="Cowzow\Move\BotOrderAttackTransfer.cs" />
     <Compile Include="Cowzow\Move\BotOrderDeploy.cs" />
-    <Compile Include="Prime\Main\DistanceCalculator.cs" />
+    <Compile Include="Prime\Picks\EfficiencyCalculator.cs" />
     <Compile Include="Prime\Main\PrimeBot.cs" />
     <Compile Include="Prime\Picks\MakePicks.cs" />
     <Compile Include="Prod\BonusPath.cs" />
