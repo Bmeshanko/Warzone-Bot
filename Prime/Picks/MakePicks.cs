@@ -10,7 +10,19 @@ namespace WarLight.Shared.AI.Prime.Picks
 
         private static float GetWeight(Main.PrimeBot bot, TerritoryIDType terrID)
         {
-            return 0.0f;
+            TerritoryDetails territory = bot.Map.Territories[terrID];
+            BonusIDType bonus = territory.PartOfBonuses.First(); // This will not work with superbonuses.
+
+            int value = bot.BonusValue(bonus);
+            int territories = bot.NumTerritories(bonus);
+            
+            float weight = (float)Math.Pow((1 / (territories - value)), 2);
+            weight *= (float)territories / (float)value;
+
+            AILog.Log("PickTerritories", "Picking weight for " + bot.TerrString(terrID) + ": " + weight);
+
+
+            return weight;
         }
 
         public static List<TerritoryIDType> Commit(Main.PrimeBot bot)

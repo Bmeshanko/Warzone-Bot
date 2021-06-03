@@ -80,5 +80,23 @@ namespace WarLight.Shared.AI.Prime.Main
             get { return Players[PlayerID]; }
         }
 
+        public int BonusValue(BonusIDType bonusID)
+        {
+            if (Settings.OverriddenBonuses.ContainsKey(bonusID))
+                return Settings.OverriddenBonuses[bonusID];
+            else
+                return Map.Bonuses[bonusID].Amount;
+        }
+
+        public int NumTerritories(BonusIDType bonusID)
+        {
+            return Map.Bonuses[bonusID].Territories.ToArray().Length;
+        }
+
+        public string TerrString(TerritoryIDType terrID)
+        {
+            return Map.Territories[terrID].Name + " (" + terrID + ")";
+        }
+
     }
 }
