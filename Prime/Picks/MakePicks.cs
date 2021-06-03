@@ -22,7 +22,7 @@ namespace WarLight.Shared.AI.Prime.Picks
             float weight = 1000;
             weight *= (float)Math.Pow(((1 / (float)(territories - value))), 4);
             weight *= (float)territories / (float)value;
-            weight *= (float)Math.Pow(turnsForBonus, -0.5);
+            weight *= (float)(1 - 0.2 * Math.Pow((turnsForBonus - 1.75), 2));
             
 
             if (hasWasteland(bot, bonusID, terrID)) weight = 0;
@@ -86,7 +86,7 @@ namespace WarLight.Shared.AI.Prime.Picks
 
                 if (neighborWeight == 0)
                 {
-                    currentWeight *= 0.8f;
+                    currentWeight *= 0.85f;
                 }
                 else if (neighborWeight / highest < 0.75)
                 {
