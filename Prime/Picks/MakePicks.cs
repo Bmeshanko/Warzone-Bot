@@ -63,13 +63,7 @@ namespace WarLight.Shared.AI.Prime.Picks
             var normalized = top.ToDictionary(o => o.Key, o => o.Value - sub);
 
             var picks = new List<TerritoryIDType>();
-            while (picks.Count < maxPicks && normalized.Count > 0)
-            {
-                var pick = RandomUtility.WeightedRandom(normalized.Keys, o => normalized[o]);
-                picks.Add(pick);
-                normalized.Remove(pick);
-            }
-            return picks;
+            return ordered.Select(o => o.Key).Take(maxPicks).ToList();
 
         }
 
