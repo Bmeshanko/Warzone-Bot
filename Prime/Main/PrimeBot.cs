@@ -67,7 +67,7 @@ namespace WarLight.Shared.AI.Prime.Main
         public List<TerritoryIDType> GetPicks()
         {
             Picks.MakePicks picks = new Picks.MakePicks();
-            return Picks.MakePicks.Commit(this);
+            return picks.Commit(this);
         }
 
         public List<GameOrder> GetOrders()
@@ -95,8 +95,14 @@ namespace WarLight.Shared.AI.Prime.Main
 
         public string TerrString(TerritoryIDType terrID)
         {
-            return Map.Territories[terrID].Name + " (" + terrID + ")";
+            return Map.Territories[terrID].Name;
         }
+
+        public String BonusString(BonusIDType bonusID)
+        {
+            return Map.Bonuses[bonusID].Name;
+        }
+
 
     }
 }
