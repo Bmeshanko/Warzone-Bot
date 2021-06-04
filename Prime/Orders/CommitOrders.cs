@@ -10,8 +10,6 @@ namespace WarLight.Shared.AI.Prime.Orders
     {
 
         public Main.PrimeBot Bot;
-        public MakeDeploys Deploys;
-        public MakeMoves Moves;
 
         public CommitOrders(Main.PrimeBot bot)
         {
@@ -30,6 +28,7 @@ namespace WarLight.Shared.AI.Prime.Orders
             }
 
             MakeMoves makeMoves = new MakeMoves(Bot, orders);
+            makeMoves.Go();
 
             foreach (var move in makeMoves.Moves.ToList())
             {

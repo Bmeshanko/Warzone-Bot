@@ -27,6 +27,8 @@ namespace WarLight.Shared.AI.Prime.Orders
             {
                 var from = order.DeployOn;
                 var to = RandomNeutralInBonus(Bot, from);
+
+                AILog.Log("MakeMoves", "Attack from " + Bot.Map.Territories[from].Name + " to " + Bot.Map.Territories[to].Name);
                 Armies armies = Bot.Standing.Territories[from].NumArmies;
                 Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to, AttackTransferEnum.Attack, false, armies, true));
             }
