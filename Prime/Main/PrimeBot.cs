@@ -72,9 +72,8 @@ namespace WarLight.Shared.AI.Prime.Main
 
         public List<GameOrder> GetOrders()
         {
-            Prod.BotMain bot = new Prod.BotMain(false);
-            Prod.MakeOrders.MakeOrdersMain orders = new Prod.MakeOrders.MakeOrdersMain(bot);
-            return orders.Go();
+            Orders.CommitOrders co = new Orders.CommitOrders(this);
+            return co.Commit();
         }
 
         public GamePlayer GamePlayerReference
