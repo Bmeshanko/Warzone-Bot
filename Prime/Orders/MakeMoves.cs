@@ -10,30 +10,64 @@ namespace WarLight.Shared.AI.Prime.Orders
     {
         public Main.PrimeBot Bot;
         public PlayerIncomeTracker IncomeTracker;
-        public List<GameOrder> Moves;
         public List<GameOrder> Deploys;
+        public List<GameOrder> Moves;
+        public List<BonusIDType> Bonuses;
 
-        public MakeMoves(Main.PrimeBot bot, List<GameOrder> deploys)
+        public MakeMoves(Main.PrimeBot bot)
         {
             this.Bot = bot;
             this.IncomeTracker = new PlayerIncomeTracker(Bot.Incomes[Bot.PlayerID], Bot.Map);
             this.Moves = new List<GameOrder>();
-            this.Deploys = deploys;
+            this.Deploys = new List<GameOrder>();
         }
 
         public void Go()
         {
-            foreach (GameOrderDeploy order in Deploys)
+            List<BonusIDType> bonuses = new List<BonusIDType>();
+            Dictionary<TerritoryIDType, TerritoryIDType> fromTo = new Dictionary<TerritoryIDType, TerritoryIDType>(); // Bordered, unowned, and in bonuses.
+            List<TerritoryIDType> territoriesOwned = new List<TerritoryIDType>(); // Owned by us.
+            foreach (var bonus in Bot.Map.Bonuses.Values)
             {
-                var from = order.DeployOn;
-                var to = RandomNeutralInBonus(Bot, from);
-
-                AILog.Log("MakeMoves", "Attack from " + Bot.Map.Territories[from].Name + " to " + Bot.Map.Territories[to].Name);
-                Armies armies = Bot.Standing.Territories[from].NumArmies;
-                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to, AttackTransferEnum.Attack, false, armies, true));
+                foreach (var terr in bonus.Territories)
+                {
+                    if (Bot.Standing.Territories[terr].OwnerPlayerID == Bot.PlayerID)
+                    {
+                        bonuses.Add(bonus.ID);
+                        territoriesOwned.Add(terr);
+                    }
+                }
             }
 
-            
+            var borders = Bot.Map.Territories.Keys.Where(o => Bot.Map.Territories[o].ConnectedTo.Keys.Any(z => territoriesOwned.Contains(z))).ToHashSet(true);
+
+            Armies armiesLeft = new Armies(IncomeTracker.FreeArmiesUndeployed);
+            List<TerritoryIDType> deployedTo = new List<TerritoryIDType>();
+
+            foreach (var terr in Bot.Standing.Territories.Values)
+            {
+                var terrDetails = Bot.Map.Territories[terr.ID];
+                if (terr.IsNeutral && borders.Contains(terr.ID) && bonuses.Contains(terrDetails.PartOfBonuses.First()))
+                {
+                    // We know it's neutral, in our bonus, and we border it. Now we need to deploy and attack.
+                    var ourTerr = terrDetails.ConnectedTo.Keys.Where(o => Bot.Standing.Territories[o].OwnerPlayerID == Bot.PlayerID).First();
+                    if (armiesLeft.NumArmies >= 3 && !deployedTo.Contains(ourTerr))
+                    {
+                        Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, 3, ourTerr, false));
+                        armiesLeft = new Armies(armiesLeft.NumArmies - 3);
+                        deployedTo.Add(ourTerr);
+                    } 
+                    else if (armiesLeft.NumArmies > 0 && !deployedTo.Contains(ourTerr))
+                    {
+                        Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, armiesLeft.NumArmies, ourTerr, false));
+                        armiesLeft = new Armies(0);
+                        deployedTo.Add(ourTerr);
+                    }
+                    
+                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, ourTerr, terr.ID, 
+                        AttackTransferEnum.AttackTransfer, false, Bot.Standing.Territories[ourTerr].NumArmies, false));
+                }
+            }
         }
 
         public TerritoryIDType RandomNeutralInBonus(Main.PrimeBot bot, TerritoryIDType from)

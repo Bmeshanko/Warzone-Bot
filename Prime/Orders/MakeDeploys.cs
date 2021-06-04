@@ -37,7 +37,7 @@ namespace WarLight.Shared.AI.Prime.Orders
                 }
             }
 
-            Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, IncomeTracker.FreeArmiesUndeployed, ourTerritories.Random(), false));
+            
         }
 
     }
