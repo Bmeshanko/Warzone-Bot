@@ -104,6 +104,21 @@ namespace WarLight.Shared.AI.Prime.Main
             return Map.Bonuses[bonusID].Name;
         }
 
+        public List<TerritoryIDType> ConnectedToInBonus(TerritoryIDType terrID)
+        {
+            BonusIDType bonus = Map.Territories[terrID].PartOfBonuses.First();
+            return Map.Territories.Keys.Where(o => Map.Territories[o].PartOfBonuses.First() == bonus && o != terrID && Map.Territories[o].ConnectedTo.Keys.Contains(terrID)).ToList();
+        }
+
+        public int armiesToTakeNeutrals()
+        {
+            return 3;
+        }
+
+        public int leftovers()
+        {
+            return 1;
+        }
 
     }
 }

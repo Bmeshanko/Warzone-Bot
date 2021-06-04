@@ -42,30 +42,47 @@ namespace WarLight.Shared.AI.Prime.Orders
             var borders = Bot.Map.Territories.Keys.Where(o => Bot.Map.Territories[o].ConnectedTo.Keys.Any(z => territoriesOwned.Contains(z))).ToHashSet(true);
 
             Armies armiesLeft = new Armies(IncomeTracker.FreeArmiesUndeployed);
-            List<TerritoryIDType> deployedTo = new List<TerritoryIDType>();
 
-            foreach (var terr in Bot.Standing.Territories.Values)
+            List<TerritoryDetails> terrDetails = Bot.Map.Territories.Values.ToList();
+            var ourTerr = terrDetails.Where(o => Bot.Standing.Territories[o.ID].OwnerPlayerID == Bot.PlayerID).ToList();
+            Dictionary<TerritoryIDType, int> deployedTo = new Dictionary<TerritoryIDType, int>();
+
+            foreach (var terr in ourTerr)
             {
-                var terrDetails = Bot.Map.Territories[terr.ID];
-                if (terr.IsNeutral && borders.Contains(terr.ID) && bonuses.Contains(terrDetails.PartOfBonuses.First()))
+                var targets = Bot.ConnectedToInBonus(terr.ID).Where(o => Bot.Standing.Territories[o].IsNeutral).ToList();
+                // We know it's neutral, in our bonus, and we border it. Now we need to deploy and attack.
+                
+                int currentArmies = Bot.Standing.Territories[terr.ID].NumArmies.NumArmies;
+
+                if (armiesLeft.NumArmies >= 3 && !deployedTo.Keys.Contains(terr.ID))
                 {
-                    // We know it's neutral, in our bonus, and we border it. Now we need to deploy and attack.
-                    var ourTerr = terrDetails.ConnectedTo.Keys.Where(o => Bot.Standing.Territories[o].OwnerPlayerID == Bot.PlayerID).First();
-                    if (armiesLeft.NumArmies >= 3 && !deployedTo.Contains(ourTerr))
-                    {
-                        Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, 3, ourTerr, false));
-                        armiesLeft = new Armies(armiesLeft.NumArmies - 3);
-                        deployedTo.Add(ourTerr);
-                    } 
-                    else if (armiesLeft.NumArmies > 0 && !deployedTo.Contains(ourTerr))
-                    {
-                        Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, armiesLeft.NumArmies, ourTerr, false));
-                        armiesLeft = new Armies(0);
-                        deployedTo.Add(ourTerr);
-                    }
+                    currentArmies += 3;
+                    Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, 3, terr.ID, false));
+                    deployedTo.Add(terr.ID, currentArmies);
+                    armiesLeft = new Armies(armiesLeft.NumArmies - 3);
+                } 
+                else if (armiesLeft.NumArmies > 0 && !deployedTo.Keys.Contains(terr.ID) && targets.Count > 0)
+                {
+                    currentArmies += armiesLeft.NumArmies;
+                    Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, armiesLeft.NumArmies, terr.ID, false));
+                    deployedTo.Add(terr.ID, armiesLeft.NumArmies);
+                    armiesLeft = new Armies(0);
                     
-                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, ourTerr, terr.ID, 
-                        AttackTransferEnum.AttackTransfer, false, Bot.Standing.Territories[ourTerr].NumArmies, false));
+                }
+
+                foreach(var opponent in Bot.Map.Territories.Values)
+                {
+                    if (opponent.ConnectedTo.ContainsKey(terr.ID) && Bot.Standing.Territories[opponent.ID].OwnerPlayerID != Bot.PlayerID) {
+                        //targets.Add(opponent.ID);
+                    }
+                }
+
+                while (targets.Count > 0 && currentArmies > 3)
+                {
+                    int numAttack = 3;
+                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, terr.ID, targets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(numAttack), false));
+                    targets.Remove(targets.First());
+                    currentArmies -= numAttack;
                 }
             }
         }
