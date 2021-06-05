@@ -60,7 +60,7 @@ namespace WarLight.Shared.AI.Prime.Orders
             }
 
             var territoriesToTake = Bot.Map.Territories.Keys.Where(o => Bot.Map.Bonuses[fewestRemainingBonus].Territories.Contains(o) && !territoriesOwned.Contains(o)).ToList();
-            
+
             TerritoryIDType deployOn = new TerritoryIDType();
             int highestConnects = 10000;
             foreach (var terr in Bot.Map.Territories.Keys.Where(o => Bot.Map.Bonuses[fewestRemainingBonus].Territories.Contains(o) && territoriesOwned.Contains(o)).ToList())
