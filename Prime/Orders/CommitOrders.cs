@@ -19,7 +19,7 @@ namespace WarLight.Shared.AI.Prime.Orders
         public List<GameOrder> Commit()
         {
             MakeMoves makeMoves = new MakeMoves(Bot);
-            makeMoves.Go();
+            makeMoves.TakeFirstBonuses();
 
             List<GameOrder> orders = makeMoves.Deploys;
             foreach(var move in makeMoves.Moves)

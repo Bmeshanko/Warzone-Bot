@@ -120,5 +120,23 @@ namespace WarLight.Shared.AI.Prime.Main
             return 1;
         }
 
+        public int leftToComplete(BonusIDType bonusID)
+        {
+            int count = 0;
+            foreach(var territory in Map.Bonuses[bonusID].Territories)
+            {
+                if (Standing.Territories[territory].OwnerPlayerID != PlayerID)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        public BonusIDType whatBonus(TerritoryIDType terrID)
+        {
+            return Map.Territories[terrID].PartOfBonuses.First();
+        }
+
     }
 }
