@@ -54,7 +54,7 @@ namespace WarLight.Shared.AI.Prime.Orders
                 
                 int currentArmies = Bot.Standing.Territories[terr.ID].NumArmies.NumArmies;
 
-                if (armiesLeft.NumArmies >= 3 && !deployedTo.Keys.Contains(terr.ID))
+                if (armiesLeft.NumArmies >= 3 && !deployedTo.Keys.Contains(terr.ID) && targets.Count > 0)
                 {
                     currentArmies += 3;
                     Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, 3, terr.ID, false));
