@@ -129,21 +129,23 @@ namespace WarLight.Shared.AI.Prime.Orders
 
             TerritoryIDType deployOn = new TerritoryIDType();
             int highestConnects = 0;
+            List<TerritoryIDType> attackTargets = new List<TerritoryIDType>();
             foreach (var terr in Bot.Map.Territories.Keys.Where(o => Bot.Map.Bonuses[fewestRemainingBonus].Territories.Contains(o) && territoriesOwned.Contains(o)).ToList())
             {
-                int numConnects = Bot.ConnectedToInBonus(terr).Where(o => Bot.Standing.Territories[o].IsNeutral).ToList().Count;
+
+                var targets = Bot.ConnectedToInBonus(terr).Where(o => Bot.Standing.Territories[o].IsNeutral).ToList();
+                int numConnects = targets.Count;
                 if (numConnects > highestConnects)
                 {
                     highestConnects = numConnects;
                     deployOn = terr;
+                    attackTargets = targets;
                 }
             }
 
             Armies armiesLeft = new Armies(IncomeTracker.FreeArmiesUndeployed);
             int armies = Bot.Standing.Territories[deployOn].NumArmies.NumArmies - 1;
             int deploysNeeded = (highestConnects * 3) - (armies);
-            
-            var attackTargets = territoriesToTake.Where(o => Bot.Map.Territories[o].ConnectedTo.Keys.Contains(deployOn)).ToList();
             
             if (IncomeTracker.FreeArmiesUndeployed + armies < deploysNeeded)
             {
