@@ -91,6 +91,7 @@
     <Compile Include="Prime\Orders\CommitOrders.cs" />
     <Compile Include="Prime\Orders\MakeDeploys.cs" />
     <Compile Include="Prime\Orders\MakeMoves.cs" />
+    <Compile Include="Prime\Orders\OrderManager.cs" />
     <Compile Include="Prime\Picks\EfficiencyCalculator.cs" />
     <Compile Include="Prime\Main\PrimeBot.cs" />
     <Compile Include="Prime\Picks\MakePicks.cs" />

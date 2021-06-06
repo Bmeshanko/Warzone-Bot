@@ -21,6 +21,23 @@ namespace WarLight.Shared.AI.Prime.Orders
             this.Moves = new List<GameOrder>();
             this.Deploys = new List<GameOrder>();
         }
+        public void DeployRest(BonusIDType bonus, int armiesDeployed)
+        {
+            Armies armiesLeft = new Armies(IncomeTracker.FreeArmiesUndeployed);
+            foreach (var terr in Bot.Map.Bonuses[bonus].Territories)
+            {
+                if (Bot.Standing.Territories[terr].OwnerPlayerID == Bot.PlayerID)
+                {
+                    Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, armiesLeft.NumArmies - armiesDeployed, terr, false));
+                    AILog.Log("MakeMoves", "Deploying " + (armiesLeft.NumArmies - armiesDeployed) + " to " + Bot.Map.Territories[terr].Name);
+                }
+            }
+        }
+
+        public void Attacks()
+        {
+
+        }
 
         public void TakeFirstBonuses()
         {
@@ -41,16 +58,11 @@ namespace WarLight.Shared.AI.Prime.Orders
 
             int fewestRemaining = 10000;
             BonusIDType fewestRemainingBonus = bonuses.First();
+            int secondFewestRemaining = 10000;
+            BonusIDType secondFewestRemainingBonus = bonuses.First();
             foreach(var bonus in bonuses)
             {
-                int count = 0;
-                foreach(var terr in Bot.Map.Bonuses[bonus].Territories)
-                {
-                    if (Bot.Standing.Territories[terr].OwnerPlayerID != Bot.PlayerID)
-                    {
-                        count++;
-                    }
-                }
+                int count = Bot.leftToComplete(bonus);
 
                 if (count > 0 && count < fewestRemaining)
                 {
@@ -59,14 +71,32 @@ namespace WarLight.Shared.AI.Prime.Orders
                 }
             }
 
+            foreach (var bonus in bonuses)
+            {
+                int count = 0;
+                foreach (var terr in Bot.Map.Bonuses[bonus].Territories)
+                {
+                    if (Bot.Standing.Territories[terr].OwnerPlayerID != Bot.PlayerID && Bot.whatBonus(terr) != fewestRemainingBonus)
+                    {
+                        count++;
+                    }
+                }
+
+                if (count > 0 && count < secondFewestRemaining)
+                {
+                    secondFewestRemaining = count;
+                    secondFewestRemainingBonus = bonus;
+                }
+            }
+
             var territoriesToTake = Bot.Map.Territories.Keys.Where(o => Bot.Map.Bonuses[fewestRemainingBonus].Territories.Contains(o) && !territoriesOwned.Contains(o)).ToList();
 
             TerritoryIDType deployOn = new TerritoryIDType();
-            int highestConnects = 10000;
+            int highestConnects = 0;
             foreach (var terr in Bot.Map.Territories.Keys.Where(o => Bot.Map.Bonuses[fewestRemainingBonus].Territories.Contains(o) && territoriesOwned.Contains(o)).ToList())
             {
                 int numConnects = Bot.ConnectedToInBonus(terr).Where(o => Bot.Standing.Territories[o].IsNeutral).ToList().Count;
-                if (numConnects < highestConnects && numConnects > 0)
+                if (numConnects > highestConnects)
                 {
                     highestConnects = numConnects;
                     deployOn = terr;
@@ -74,27 +104,45 @@ namespace WarLight.Shared.AI.Prime.Orders
             }
 
             Armies armiesLeft = new Armies(IncomeTracker.FreeArmiesUndeployed);
-            int armies = Bot.Standing.Territories[deployOn].NumArmies.NumArmies;
-            int deploysNeeded = IncomeTracker.FreeArmiesUndeployed;
+            int armies = Bot.Standing.Territories[deployOn].NumArmies.NumArmies - 1;
+            int deploysNeeded = (highestConnects * 3) - (armies);
             
-            Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, deploysNeeded, deployOn, false));
-            AILog.Log("MakeMoves", "Deploying " + deploysNeeded + " to " + Bot.Map.Territories[deployOn].Name);
-            armiesLeft = new Armies(armiesLeft.NumArmies - deploysNeeded);
-
             var attackTargets = territoriesToTake.Where(o => Bot.Map.Territories[o].ConnectedTo.Keys.Contains(deployOn)).ToList();
+            
+            if (IncomeTracker.FreeArmiesUndeployed + armies < deploysNeeded)
+            {
+                // Highest multiple of 3 less than FreeArmies.
+                deploysNeeded = IncomeTracker.FreeArmiesUndeployed + armies;
+                deploysNeeded -= deploysNeeded % 3;
+            }
+            
             if (attackTargets.Count == 1)
             {
-                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(armies + deploysNeeded - 1), false));
+                deploysNeeded = IncomeTracker.FreeArmiesUndeployed;
+            }
+            if (deploysNeeded > 0)
+            {
+                Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, deploysNeeded, deployOn, false));
+                AILog.Log("MakeMoves", "Deploying " + deploysNeeded + " to " + Bot.Map.Territories[deployOn].Name);
+                armiesLeft = new Armies(armiesLeft.NumArmies - deploysNeeded);
+            }
+
+           
+            if (attackTargets.Count == 1)
+            {
+                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(armies + deploysNeeded), false));
             } 
             else
             {
-                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(5), false));
+                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
                 attackTargets.Remove(attackTargets.First());
                 Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
 
             }
-
-
+            if (IncomeTracker.FreeArmiesUndeployed - deploysNeeded > 0)
+            {
+                DeployRest(secondFewestRemainingBonus, deploysNeeded);
+            }
         }
 
         public void Go() // Expansion.
