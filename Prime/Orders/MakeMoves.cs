@@ -26,17 +26,53 @@ namespace WarLight.Shared.AI.Prime.Orders
             Armies armiesLeft = new Armies(IncomeTracker.FreeArmiesUndeployed);
             foreach (var terr in Bot.Map.Bonuses[bonus].Territories)
             {
-                if (Bot.Standing.Territories[terr].OwnerPlayerID == Bot.PlayerID)
+                if (Bot.Standing.Territories[terr].OwnerPlayerID == Bot.PlayerID && armiesLeft.NumArmies > 0)
                 {
                     Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, armiesLeft.NumArmies - armiesDeployed, terr, false));
                     AILog.Log("MakeMoves", "Deploying " + (armiesLeft.NumArmies - armiesDeployed) + " to " + Bot.Map.Territories[terr].Name);
+                    armiesLeft = new Armies(0);
                 }
             }
         }
 
-        public void Attacks()
+        public void Attack(TerritoryIDType from, List<TerritoryIDType> to)
         {
+            int freeArmies = Bot.Standing.Territories[from].NumArmies.NumArmies - 1;
+            foreach(GameOrderDeploy deploy in Deploys)
+            {
+                if (deploy.DeployOn == from)
+                {
+                    freeArmies += deploy.NumArmies;
+                }
+            }
 
+            while (to.Count > 0 && freeArmies >= 3)
+            {
+                if (freeArmies < 6 || to.Count == 1)
+                {
+                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(freeArmies), false));
+                    to.Remove(to.First());
+                    freeArmies = 0;
+                } 
+                else
+                {
+                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
+                    to.Remove(to.First());
+                    freeArmies -= 3;
+                }
+            }
+        }
+
+        public void AttackRest(BonusIDType notHere, List<TerritoryIDType> ourTerritories)
+        {
+            // We should submit attacks from everywhere else we deployed.
+            foreach(var terr in ourTerritories)
+            {
+                if (Bot.Map.Bonuses[notHere].Territories.Contains(terr)) continue;
+                var attackTargets = Bot.Map.Territories.Keys.Where(o => Bot.Map.Territories[o].ConnectedTo.Keys.Contains(terr)).ToList();
+
+                Attack(terr, attackTargets);
+            }
         }
 
         public void TakeFirstBonuses()
@@ -142,6 +178,7 @@ namespace WarLight.Shared.AI.Prime.Orders
             if (IncomeTracker.FreeArmiesUndeployed - deploysNeeded > 0)
             {
                 DeployRest(secondFewestRemainingBonus, deploysNeeded);
+                AttackRest(fewestRemainingBonus, territoriesOwned);
             }
         }
 
