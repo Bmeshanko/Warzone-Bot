@@ -43,11 +43,18 @@ namespace WarLight.Shared.AI.Prime.Orders
                 if (deploy.DeployOn == from)
                 {
                     freeArmies += deploy.NumArmies;
+                    break;
                 }
+            }
+
+            foreach(GameOrderAttackTransfer attack in Moves)
+            {
+                if (attack.From == from) return;
             }
 
             while (to.Count > 0 && freeArmies >= 3)
             {
+                AILog.Log("Attack", "Attacking from " + Bot.Map.Territories[from].Name + " to " + Bot.Map.Territories[to.First()].Name);
                 if (freeArmies < 6 || to.Count == 1)
                 {
                     Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(freeArmies), false));
@@ -63,14 +70,14 @@ namespace WarLight.Shared.AI.Prime.Orders
             }
         }
 
-        public void AttackRest(BonusIDType notHere, List<TerritoryIDType> ourTerritories)
+        public void AttackRest(List<TerritoryIDType> ourTerritories)
         {
+            
             // We should submit attacks from everywhere else we deployed.
             foreach(var terr in ourTerritories)
             {
-                if (Bot.Map.Bonuses[notHere].Territories.Contains(terr)) continue;
-                var attackTargets = Bot.Map.Territories.Keys.Where(o => Bot.Map.Territories[o].ConnectedTo.Keys.Contains(terr)).ToList();
 
+                var attackTargets = Bot.ConnectedToInBonusNeutral(terr);
                 Attack(terr, attackTargets);
             }
         }
@@ -133,7 +140,7 @@ namespace WarLight.Shared.AI.Prime.Orders
             foreach (var terr in Bot.Map.Territories.Keys.Where(o => Bot.Map.Bonuses[fewestRemainingBonus].Territories.Contains(o) && territoriesOwned.Contains(o)).ToList())
             {
 
-                var targets = Bot.ConnectedToInBonus(terr).Where(o => Bot.Standing.Territories[o].IsNeutral).ToList();
+                var targets = Bot.ConnectedToInBonusNeutral(terr);
                 int numConnects = targets.Count;
                 if (numConnects > highestConnects)
                 {
@@ -146,11 +153,11 @@ namespace WarLight.Shared.AI.Prime.Orders
             Armies armiesLeft = new Armies(IncomeTracker.FreeArmiesUndeployed);
             int armies = Bot.Standing.Territories[deployOn].NumArmies.NumArmies - 1;
             int deploysNeeded = (highestConnects * 3) - (armies);
-            
-            if (IncomeTracker.FreeArmiesUndeployed + armies < deploysNeeded)
+
+            if (armiesLeft.NumArmies < deploysNeeded)
             {
                 // Highest multiple of 3 less than FreeArmies.
-                deploysNeeded = IncomeTracker.FreeArmiesUndeployed + armies;
+                deploysNeeded = armiesLeft.NumArmies;
                 deploysNeeded -= deploysNeeded % 3;
             }
             
@@ -165,23 +172,13 @@ namespace WarLight.Shared.AI.Prime.Orders
                 armiesLeft = new Armies(armiesLeft.NumArmies - deploysNeeded);
             }
 
-           
-            if (attackTargets.Count == 1)
-            {
-                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(armies + deploysNeeded), false));
-            } 
-            else
-            {
-                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
-                attackTargets.Remove(attackTargets.First());
-                Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, deployOn, attackTargets.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
+            Attack(deployOn, attackTargets);
 
-            }
-            if (IncomeTracker.FreeArmiesUndeployed - deploysNeeded > 0)
+            if (armiesLeft.NumArmies > 0)
             {
                 DeployRest(secondFewestRemainingBonus, deploysNeeded);
-                AttackRest(fewestRemainingBonus, territoriesOwned);
             }
+            AttackRest(territoriesOwned);
         }
 
         public void Go() // Expansion.
