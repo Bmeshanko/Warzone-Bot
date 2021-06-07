@@ -18,11 +18,11 @@ namespace WarLight.Shared.AI.Prime.Orders
 
         public List<GameOrder> Commit()
         {
-            MakeMoves makeMoves = new MakeMoves(Bot);
-            makeMoves.TakeFirstBonuses();
+            OrderManager manager = new OrderManager(Bot);
+            manager.Go();
 
-            List<GameOrder> orders = makeMoves.Deploys;
-            foreach(var move in makeMoves.Moves)
+            List<GameOrder> orders = manager.Deploys;
+            foreach(var move in manager.Moves)
             {
                 orders.Add(move);
             }
