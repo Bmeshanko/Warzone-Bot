@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WarLight.Shared.AI.Prime.Orders
 {
-    class OrderManager
+    public class OrderManager
     {
         public Main.PrimeBot Bot;
         public PlayerIncomeTracker IncomeTracker;
@@ -34,16 +34,51 @@ namespace WarLight.Shared.AI.Prime.Orders
 
             // Completed our bonuses: MidGameExpansion.
 
-            if (BonusesCompleted.Count < 4)
+            if (BonusesCompleted.Count < 3)
             {
-                EarlyGameExpansion ege = new EarlyGameExpansion(Bot);
+                EarlyGameExpansion ege = new EarlyGameExpansion(Bot, this);
                 ege.Go();
                 Deploys = ege.Deploys;
                 Moves = ege.Moves;
             }
             else
             {
+                MidGameExpansion mge = new MidGameExpansion(Bot, this);
+                mge.Go();
+            }
+        }
+        public void Attack(TerritoryIDType from, List<TerritoryIDType> to)
+        {
+            int freeArmies = Bot.Standing.Territories[from].NumArmies.NumArmies - 1;
+            foreach (GameOrderDeploy deploy in Deploys)
+            {
+                if (deploy.DeployOn == from)
+                {
+                    freeArmies += deploy.NumArmies;
+                    break;
+                }
+            }
 
+            foreach (GameOrderAttackTransfer attack in Moves)
+            {
+                if (attack.From == from) return;
+            }
+
+            while (to.Count > 0 && freeArmies >= 3)
+            {
+                AILog.Log("Attack", "Attacking from " + Bot.Map.Territories[from].Name + " to " + Bot.Map.Territories[to.First()].Name);
+                if (freeArmies < 6 || to.Count == 1)
+                {
+                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(freeArmies), false));
+                    to.Remove(to.First());
+                    freeArmies = 0;
+                }
+                else
+                {
+                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
+                    to.Remove(to.First());
+                    freeArmies -= 3;
+                }
             }
         }
 

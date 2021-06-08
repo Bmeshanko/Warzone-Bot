@@ -13,13 +13,15 @@ namespace WarLight.Shared.AI.Prime.Orders
         public List<GameOrder> Deploys;
         public List<GameOrder> Moves;
         public List<BonusIDType> Bonuses;
+        public OrderManager Parent;
 
-        public EarlyGameExpansion(Main.PrimeBot bot)
+        public EarlyGameExpansion(Main.PrimeBot bot, OrderManager parent)
         {
             this.Bot = bot;
             this.IncomeTracker = new PlayerIncomeTracker(Bot.Incomes[Bot.PlayerID], Bot.Map);
             this.Moves = new List<GameOrder>();
             this.Deploys = new List<GameOrder>();
+            this.Parent = parent;
         }
         public void DeployRest(BonusIDType bonus, int armiesDeployed)
         {
@@ -34,42 +36,6 @@ namespace WarLight.Shared.AI.Prime.Orders
                 }
             }
         }
-
-        public void Attack(TerritoryIDType from, List<TerritoryIDType> to)
-        {
-            int freeArmies = Bot.Standing.Territories[from].NumArmies.NumArmies - 1;
-            foreach(GameOrderDeploy deploy in Deploys)
-            {
-                if (deploy.DeployOn == from)
-                {
-                    freeArmies += deploy.NumArmies;
-                    break;
-                }
-            }
-
-            foreach(GameOrderAttackTransfer attack in Moves)
-            {
-                if (attack.From == from) return;
-            }
-
-            while (to.Count > 0 && freeArmies >= 3)
-            {
-                AILog.Log("Attack", "Attacking from " + Bot.Map.Territories[from].Name + " to " + Bot.Map.Territories[to.First()].Name);
-                if (freeArmies < 6 || to.Count == 1)
-                {
-                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(freeArmies), false));
-                    to.Remove(to.First());
-                    freeArmies = 0;
-                } 
-                else
-                {
-                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
-                    to.Remove(to.First());
-                    freeArmies -= 3;
-                }
-            }
-        }
-
         public void AttackRest(List<TerritoryIDType> ourTerritories)
         {
             
@@ -78,7 +44,7 @@ namespace WarLight.Shared.AI.Prime.Orders
             {
 
                 var attackTargets = Bot.ConnectedToInBonusNeutral(terr);
-                Attack(terr, attackTargets);
+                Parent.Attack(terr, attackTargets);
             }
         }
 
@@ -175,7 +141,7 @@ namespace WarLight.Shared.AI.Prime.Orders
                 armiesLeft = new Armies(armiesLeft.NumArmies - deploysNeeded);
             }
 
-            Attack(deployOn, attackTargets);
+            Parent.Attack(deployOn, attackTargets);
 
             if (armiesLeft.NumArmies > 0)
             {
