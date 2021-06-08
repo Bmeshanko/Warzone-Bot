@@ -144,5 +144,26 @@ namespace WarLight.Shared.AI.Prime.Main
             return Map.Territories[terrID].PartOfBonuses.First();
         }
 
+        public List<TerritoryIDType> OurTerritories()
+        {
+            return Standing.Territories.Keys.Where(o => Standing.Territories[o].OwnerPlayerID == PlayerID).ToList();
+        }
+
+        public bool FoundEnemy()
+        {
+            foreach (var territory in OurTerritories())
+            {
+                var borders = Map.Territories[territory].ConnectedTo.Keys.ToList();
+                foreach (var terr in borders)
+                {
+                    if (Standing.Territories[terr].OwnerPlayerID != PlayerID && !Standing.Territories[terr].IsNeutral)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
     }
 }

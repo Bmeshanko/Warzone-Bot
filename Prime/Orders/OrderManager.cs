@@ -30,12 +30,20 @@ namespace WarLight.Shared.AI.Prime.Orders
 
         public void Go()
         {
-            if (BonusesCompleted.Count < 3)
+            // Find Enemy: Attack.
+
+            // Completed our bonuses: MidGameExpansion.
+
+            if (BonusesCompleted.Count < 4)
             {
                 EarlyGameExpansion ege = new EarlyGameExpansion(Bot);
                 ege.Go();
                 Deploys = ege.Deploys;
                 Moves = ege.Moves;
+            }
+            else
+            {
+
             }
         }
 

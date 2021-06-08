@@ -88,9 +88,11 @@
     <Compile Include="Cowzow\Move\BotOrder.cs" />
     <Compile Include="Cowzow\Move\BotOrderAttackTransfer.cs" />
     <Compile Include="Cowzow\Move\BotOrderDeploy.cs" />
+    <Compile Include="Prime\Orders\AttackDefend.cs" />
     <Compile Include="Prime\Orders\CommitOrders.cs" />
     <Compile Include="Prime\Orders\MakeDeploys.cs" />
     <Compile Include="Prime\Orders\EarlyGameExpansion.cs" />
+    <Compile Include="Prime\Orders\MidGameExpansion.cs" />
     <Compile Include="Prime\Orders\OrderManager.cs" />
     <Compile Include="Prime\Picks\EfficiencyCalculator.cs" />
     <Compile Include="Prime\Main\PrimeBot.cs" />
