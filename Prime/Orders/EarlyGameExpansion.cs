@@ -10,8 +10,6 @@ namespace WarLight.Shared.AI.Prime.Orders
     {
         public Main.PrimeBot Bot;
         public PlayerIncomeTracker IncomeTracker;
-        public List<GameOrder> Deploys;
-        public List<GameOrder> Moves;
         public List<BonusIDType> Bonuses;
         public OrderManager Parent;
 
@@ -19,8 +17,6 @@ namespace WarLight.Shared.AI.Prime.Orders
         {
             this.Bot = bot;
             this.IncomeTracker = new PlayerIncomeTracker(Bot.Incomes[Bot.PlayerID], Bot.Map);
-            this.Moves = new List<GameOrder>();
-            this.Deploys = new List<GameOrder>();
             this.Parent = parent;
         }
         public void DeployRest(BonusIDType bonus, int armiesDeployed)
@@ -30,7 +26,7 @@ namespace WarLight.Shared.AI.Prime.Orders
             {
                 if (Bot.Standing.Territories[terr].OwnerPlayerID == Bot.PlayerID && armiesLeft.NumArmies > 0)
                 {
-                    Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, armiesLeft.NumArmies - armiesDeployed, terr, false));
+                    Parent.Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, armiesLeft.NumArmies - armiesDeployed, terr, false));
                     AILog.Log("MakeMoves", "Deploying " + (armiesLeft.NumArmies - armiesDeployed) + " to " + Bot.Map.Territories[terr].Name);
                     armiesLeft = new Armies(0);
                 }
@@ -136,7 +132,7 @@ namespace WarLight.Shared.AI.Prime.Orders
 
             if (deploysNeeded > 0)
             {
-                Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, deploysNeeded, deployOn, false));
+                Parent.Deploys.Add(GameOrderDeploy.Create(Bot.PlayerID, deploysNeeded, deployOn, false));
                 AILog.Log("MakeMoves", "Deploying " + deploysNeeded + " to " + Bot.Map.Territories[deployOn].Name);
                 armiesLeft = new Armies(armiesLeft.NumArmies - deploysNeeded);
             }

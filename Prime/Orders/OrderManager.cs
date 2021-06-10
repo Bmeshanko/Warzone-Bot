@@ -38,8 +38,6 @@ namespace WarLight.Shared.AI.Prime.Orders
             {
                 EarlyGameExpansion ege = new EarlyGameExpansion(Bot, this);
                 ege.Go();
-                Deploys = ege.Deploys;
-                Moves = ege.Moves;
             }
             else
             {

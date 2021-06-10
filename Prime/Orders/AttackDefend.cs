@@ -8,5 +8,6 @@ namespace WarLight.Shared.AI.Prime.Orders
 {
     class AttackDefend
     {
+
     }
 }
