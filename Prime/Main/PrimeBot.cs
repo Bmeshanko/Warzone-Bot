@@ -66,7 +66,7 @@ namespace WarLight.Shared.AI.Prime.Main
         }
         public List<TerritoryIDType> GetPicks()
         {
-            Picks.MakePicks picks = new Picks.MakePicks();
+            Picks.MakePicks picks = new Picks.MakePicks(this);
             return picks.Commit(this);
         }
 
@@ -163,6 +163,48 @@ namespace WarLight.Shared.AI.Prime.Main
                 }
             }
             return false;
+        }
+
+        public HashSet<BonusIDType> bonusNeighbors(Main.PrimeBot bot, BonusIDType bonusID)
+        {
+            BonusDetails bonus = bot.Map.Bonuses[bonusID];
+
+
+            var terrs = bonus.Territories.ToHashSet(true);
+            var neighbors = new HashSet<BonusIDType>();
+
+            foreach (var terr in terrs)
+            {
+                var connections = terrs.Where(o => bot.Map.Territories[o].ConnectedTo.Keys.Any(z => terrs.Contains(z))).ToHashSet(true);
+                foreach (var territory in connections)
+                {
+                    TerritoryDetails details = bot.Map.Territories[territory];
+                    BonusIDType partOf = details.PartOfBonuses.First(); // Will not work with superbonuses.
+                    if (partOf.GetHashCode() != bonusID.GetHashCode() && !neighbors.Contains(partOf))
+                    {
+                        neighbors.Add(partOf);
+                    }
+                }
+            }
+            return neighbors;
+        }
+
+        public List<BonusIDType> Wastelands()
+        {
+            List<BonusIDType> bonuses = new List<BonusIDType>();
+            foreach(var bonus in Map.Bonuses)
+            {
+                BonusDetails details = bonus.Value;
+                foreach(var terr in details.Territories)
+                {
+                    if (DistributionStanding.Territories[terr].NumArmies.NumArmies != Settings.InitialNonDistributionArmies && DistributionStanding.Territories[terr].NumArmies.NumArmies != Settings.InitialNeutralsInDistribution)
+                    {
+                        bonuses.Add(bonus.Key);
+                        break;
+                    }
+                }
+            }
+            return bonuses;
         }
 
     }

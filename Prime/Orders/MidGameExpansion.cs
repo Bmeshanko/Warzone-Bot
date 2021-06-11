@@ -27,7 +27,7 @@ namespace WarLight.Shared.AI.Prime.Orders
 
         public void Go()
         {
-
+            var bonusesCompleted = Parent.BonusesCompleted;
         }
     }
 }
