@@ -207,5 +207,20 @@ namespace WarLight.Shared.AI.Prime.Main
             return bonuses;
         }
 
+        public List<TerritoryIDType> Borders()
+        {
+            var ours = OurTerritories();
+            List<TerritoryIDType> borders = new List<TerritoryIDType>();
+            foreach (var terr in ours)
+            {
+                borders.Concat(Map.Territories[terr].ConnectedTo.Keys);
+            }
+            return borders;
+        }
+
+        public List<TerritoryIDType> EnemyBorders()
+        {
+            return Borders().Where(o => Standing.Territories[o].OwnerPlayerID != PlayerID && Standing.Territories[o].IsNeutral).ToList();
+        }
     }
 }
