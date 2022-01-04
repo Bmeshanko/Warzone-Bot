@@ -20,70 +20,15 @@ namespace WarLight.Shared.AI.Prime.Orders
             this.IncomeTracker = new PlayerIncomeTracker(Bot.Incomes[Bot.PlayerID], Bot.Map);
             this.Moves = new List<GameOrder>();
             this.Deploys = new List<GameOrder>();
-            this.BonusesCompleted = EvaluateBonusesCompleted();
         }
-
-        public List<BonusIDType> EvaluateBonusesCompleted()
-        {
-            return Bot.Map.Bonuses.Keys.Where(o => Bot.leftToComplete(o) == 0).ToList();
-        }
-
         public void Go()
         {
-            // Find Enemy: Attack.
+            DeployOrders d = new DeployOrders(Bot);
+            var terr = d.evaluateDeploys().First();
+            var deploy = GameOrderDeploy.Create(Bot.PlayerID, Bot.BaseIncome.FreeArmies, terr, true);
+            Deploys.Add(deploy);
 
-            // Completed our bonuses: MidGameExpansion.
 
-            if (Bot.FoundEnemy())
-            {
-                AttackDefend ad = new AttackDefend(Bot, this);
-                ad.Go();
-            }
-            else if (BonusesCompleted.Count < 3)
-            {
-                EarlyGameExpansion ege = new EarlyGameExpansion(Bot, this);
-                ege.Go();
-            }
-            else
-            {
-                MidGameExpansion mge = new MidGameExpansion(Bot, this);
-                mge.Go();
-            }
         }
-        public void Attack(TerritoryIDType from, List<TerritoryIDType> to)
-        {
-            int freeArmies = Bot.Standing.Territories[from].NumArmies.NumArmies - 1;
-            foreach (GameOrderDeploy deploy in Deploys)
-            {
-                if (deploy.DeployOn == from)
-                {
-                    freeArmies += deploy.NumArmies;
-                    break;
-                }
-            }
-
-            foreach (GameOrderAttackTransfer attack in Moves)
-            {
-                if (attack.From == from) return;
-            }
-
-            while (to.Count > 0 && freeArmies >= 3)
-            {
-                AILog.Log("Attack", "Attacking from " + Bot.Map.Territories[from].Name + " to " + Bot.Map.Territories[to.First()].Name);
-                if (freeArmies < 6 || to.Count == 1)
-                {
-                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(freeArmies), false));
-                    to.Remove(to.First());
-                    freeArmies = 0;
-                }
-                else
-                {
-                    Moves.Add(GameOrderAttackTransfer.Create(Bot.PlayerID, from, to.First(), AttackTransferEnum.AttackTransfer, false, new Armies(3), false));
-                    to.Remove(to.First());
-                    freeArmies -= 3;
-                }
-            }
-        }
-
     }
 }

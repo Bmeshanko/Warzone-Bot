@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace WarLight.Shared.AI.Prime.Orders
 {
-    class CommitOrders
+    public class CommitOrders
     {
-
         public Main.PrimeBot Bot;
 
         public CommitOrders(Main.PrimeBot bot)

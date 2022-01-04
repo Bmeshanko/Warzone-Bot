@@ -128,15 +128,19 @@ namespace WarLight.Shared.AI.Prime.Main
 
         public int leftToComplete(BonusIDType bonusID)
         {
-            int count = 0;
-            foreach(var territory in Map.Bonuses[bonusID].Territories)
+            int neutrals = 0;
+            int armies = 0;
+            foreach(var terr in Map.Bonuses[bonusID].Territories)
             {
-                if (Standing.Territories[territory].OwnerPlayerID != PlayerID)
+                if (Standing.Territories[terr].OwnerPlayerID != PlayerID)
                 {
-                    count++;
+                    neutrals++;
+                } else
+                {
+                    armies += Standing.Territories[terr].NumArmies.NumArmies;
                 }
             }
-            return count;
+            return (3 * neutrals) - armies;
         }
 
         public BonusIDType whatBonus(TerritoryIDType terrID)
@@ -164,7 +168,10 @@ namespace WarLight.Shared.AI.Prime.Main
             }
             return false;
         }
-
+        public List<BonusIDType> EvaluateBonusesCompleted()
+        {
+            return Map.Bonuses.Keys.Where(o => leftToComplete(o) == 0).ToList();
+        }
         public HashSet<BonusIDType> bonusNeighbors(Main.PrimeBot bot, BonusIDType bonusID)
         {
             BonusDetails bonus = bot.Map.Bonuses[bonusID];
