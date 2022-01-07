@@ -19,6 +19,7 @@ namespace WarLight.Shared.AI.Prime.Main
             this.Bonus = bonus;
             this.Bot = bot;
         }
+
         public void shortestPath(List<TerritoryIDType> from)
         {
             int toDeploy = 0;
@@ -32,13 +33,31 @@ namespace WarLight.Shared.AI.Prime.Main
             }
             while (queue.Count > 0)
             {
-                AILog.Log("BonusPath", "Armies Needed: " + toDeploy);
                 var terr = queue.Last();
                 int armies = armiesQueue.Last();
                 queue.Remove(terr);
                 armiesQueue.Remove(armies);
                 var borders = Bot.ConnectedToInBonusNeutral(terr).Where(o => !dump.Contains(o)).ToList();
-                if (borders.Count == 1 && armies > 0)
+                bool branch = false;
+                if (Bot.branchTerritories(terr).Count > 0)
+                {
+                    branch = true;
+                    foreach(var border in Bot.branchTerritories(terr))
+                    {
+                        borders.Remove(border);
+                        if (armies <= 3)
+                        {
+                            toDeploy += 3 - armies;
+                            armies = 0;
+                        }
+                        else
+                        {
+                            armies -= 3;
+                        }
+                    }
+                }
+
+                if (borders.Count == 1 && (armies > 0 || branch))
                 {
                     queue.Insert(0, borders.ElementAt(0));
                     dump.Add(borders.ElementAt(0));
@@ -50,7 +69,7 @@ namespace WarLight.Shared.AI.Prime.Main
                         deployWhereThisTurn.Add(terr);
                     }
                 }
-                else if (borders.Count > 1 && armies > 0)
+                else if (borders.Count > 1 && (armies > 0 || branch))
                 {
                     queue.Insert(0, borders.ElementAt(0));
                     queue.Insert(0, borders.ElementAt(1));

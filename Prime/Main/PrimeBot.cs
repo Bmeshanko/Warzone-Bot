@@ -157,6 +157,11 @@ namespace WarLight.Shared.AI.Prime.Main
             return Map.Territories[terrID].PartOfBonuses.First();
         }
 
+        public List<TerritoryIDType> branchTerritories(TerritoryIDType terr) // Territories that are only connected to this one
+        {
+            return ConnectedToInBonusNeutral(terr).Where(o => ConnectedToInBonus(o).Count == 1).ToList();
+        }
+
         public List<TerritoryIDType> OurTerritories()
         {
             return Standing.Territories.Keys.Where(o => Standing.Territories[o].OwnerPlayerID == PlayerID).ToList();
