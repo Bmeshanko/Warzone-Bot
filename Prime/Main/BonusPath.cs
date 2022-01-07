@@ -18,6 +18,8 @@ namespace WarLight.Shared.AI.Prime.Main
         {
             this.Bonus = bonus;
             this.Bot = bot;
+            deployThisTurn = new List<int>();
+            deployWhereThisTurn = new List<TerritoryIDType>();
         }
 
         public void shortestPath(List<TerritoryIDType> from)
@@ -63,7 +65,7 @@ namespace WarLight.Shared.AI.Prime.Main
                     dump.Add(borders.ElementAt(0));
                     armiesQueue.Insert(0, 1);
                     toDeploy += 3 - armies;
-                    if (from.Contains(terr))
+                    if (Bot.OurTerritories().Contains(terr))
                     {
                         deployThisTurn.Add(3 - armies);
                         deployWhereThisTurn.Add(terr);
@@ -78,7 +80,7 @@ namespace WarLight.Shared.AI.Prime.Main
                     armiesQueue.Insert(0, 1);
                     armiesQueue.Insert(0, 1);
                     toDeploy += 6 - armies;
-                    if (from.Contains(terr))
+                    if (Bot.OurTerritories().Contains(terr))
                     {
                         deployThisTurn.Add(6 - armies);
                         deployWhereThisTurn.Add(terr);

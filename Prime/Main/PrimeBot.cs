@@ -112,7 +112,6 @@ namespace WarLight.Shared.AI.Prime.Main
 
         public List<TerritoryIDType> ConnectedToInBonusNeutral(TerritoryIDType terrID)
         {
-            BonusIDType bonus = Map.Territories[terrID].PartOfBonuses.First();
             return ConnectedToInBonus(terrID).Where(o => Standing.Territories[o].IsNeutral).ToList();
         }
 

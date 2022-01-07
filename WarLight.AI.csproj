@@ -89,8 +89,9 @@
     <Compile Include="Cowzow\Move\BotOrderAttackTransfer.cs" />
     <Compile Include="Cowzow\Move\BotOrderDeploy.cs" />
     <Compile Include="Prime\Main\BonusPath.cs" />
+    <Compile Include="Prime\Orders\Attack.cs" />
     <Compile Include="Prime\Orders\CommitOrders.cs" />
-    <Compile Include="Prime\Orders\AttackOrders.cs" />
+    <Compile Include="Prime\Orders\EvaluateOrders.cs" />
     <Compile Include="Prime\Orders\OrderManager.cs" />
     <Compile Include="Prime\Picks\EfficiencyCalculator.cs" />
     <Compile Include="Prime\Main\PrimeBot.cs" />
@@ -173,7 +174,7 @@
     <Compile Include="Common\Util\RandomUtility.cs" />
     <Compile Include="Common\GameObjects\SpecialUnit.cs" />
     <Compile Include="Common\GameObjects\TerritoryStanding.cs" />
-    <Compile Include="Prime\Orders\DeployOrders.cs" />
+    <Compile Include="Prime\Orders\Deploy.cs" />
     <Compile Include="Wunderwaffe\Debug\Debug.cs" />
     <Compile Include="Wunderwaffe\Evaluation\ExpansionMapUpdater.cs" />
     <Compile Include="Wunderwaffe\Evaluation\StatefulFogRemover.cs" />

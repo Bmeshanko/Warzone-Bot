@@ -38,9 +38,9 @@ namespace WarLight.Shared.AI.Prime.Orders
         }
         public void Go()
         {
-            DeployOrders d = new DeployOrders(Bot);
-            AttackOrders a = new AttackOrders(Bot);
+            EvaluateOrders e = new EvaluateOrders(Bot);
             List<BonusIDType> bestBonuses = sortedBonuses();
+            Deploys = e.expansion(bestBonuses);
         }
     }
 }
