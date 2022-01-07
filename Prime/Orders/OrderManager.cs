@@ -21,14 +21,26 @@ namespace WarLight.Shared.AI.Prime.Orders
             this.Moves = new List<GameOrder>();
             this.Deploys = new List<GameOrder>();
         }
+
+        public List<BonusIDType> sortedBonuses()
+        {
+            Dictionary<BonusIDType, int> bonuses = new Dictionary<BonusIDType, int>();
+
+            foreach (var bonus in Bot.BonusesWeHave())
+            {
+                Main.BonusPath bp = new Main.BonusPath(bonus, Bot);
+                bp.shortestPath(Bot.OurTerritoriesInBonus(bonus));
+                AILog.Log("BonusPath", bp.armiesNeeded + " armies needed to complete " + Bot.Map.Bonuses[bonus].Name);
+                bonuses.Add(bonus, bp.armiesNeeded);
+            }
+            bonuses.OrderBy(o => o.Value);
+            return bonuses.Keys.ToList();
+        }
         public void Go()
         {
             DeployOrders d = new DeployOrders(Bot);
-            var terr = d.evaluateDeploys().First();
-            var deploy = GameOrderDeploy.Create(Bot.PlayerID, Bot.BaseIncome.FreeArmies, terr, true);
-            Deploys.Add(deploy);
-
-
+            AttackOrders a = new AttackOrders(Bot);
+            List<BonusIDType> bestBonuses = sortedBonuses();
         }
     }
 }

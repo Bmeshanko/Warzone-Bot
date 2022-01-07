@@ -116,6 +116,11 @@ namespace WarLight.Shared.AI.Prime.Main
             return ConnectedToInBonus(terrID).Where(o => Standing.Territories[o].IsNeutral).ToList();
         }
 
+        public int armiesOnTerritory(TerritoryIDType terr)
+        {
+            return Standing.Territories[terr].NumArmies.NumArmies;
+        }
+
         public int armiesToTakeNeutrals()
         {
             return 3;
@@ -140,6 +145,10 @@ namespace WarLight.Shared.AI.Prime.Main
                     armies += Standing.Territories[terr].NumArmies.NumArmies;
                 }
             }
+            if (neutrals == 0)
+            {
+                return 0;
+            }
             return (3 * neutrals) - armies;
         }
 
@@ -151,6 +160,11 @@ namespace WarLight.Shared.AI.Prime.Main
         public List<TerritoryIDType> OurTerritories()
         {
             return Standing.Territories.Keys.Where(o => Standing.Territories[o].OwnerPlayerID == PlayerID).ToList();
+        }
+
+        public List<TerritoryIDType> OurTerritoriesInBonus(BonusIDType bonus)
+        {
+            return OurTerritories().Where(o => Map.Bonuses[bonus].Territories.Contains(o)).ToList();
         }
 
         public bool FoundEnemy()
@@ -168,9 +182,18 @@ namespace WarLight.Shared.AI.Prime.Main
             }
             return false;
         }
-        public List<BonusIDType> EvaluateBonusesCompleted()
+        public List<BonusIDType> BonusesWeHave()
         {
-            return Map.Bonuses.Keys.Where(o => leftToComplete(o) == 0).ToList();
+            List<BonusIDType> bonuses = new List<BonusIDType>();
+            foreach(var terr in OurTerritories())
+            {
+                var bonus = whatBonus(terr);
+                if (!bonuses.Contains(bonus))
+                {
+                    bonuses.Add(bonus);
+                }
+            }
+            return bonuses;
         }
         public HashSet<BonusIDType> bonusNeighbors(Main.PrimeBot bot, BonusIDType bonusID)
         {

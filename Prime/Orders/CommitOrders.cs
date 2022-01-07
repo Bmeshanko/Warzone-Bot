@@ -25,6 +25,7 @@ namespace WarLight.Shared.AI.Prime.Orders
             {
                 orders.Add(move);
             }
+            Bot.NumberOfTurns++;
             return orders;
         }
 

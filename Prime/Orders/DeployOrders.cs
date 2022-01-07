@@ -18,17 +18,42 @@ namespace WarLight.Shared.AI.Prime.Orders
         public List<TerritoryIDType> evaluateDeploys()
         {
             var territories = Bot.OurTerritories();
-            int easiest = 100; // Arbitrarily large number
+            int hardest = Bot.leftToComplete(Bot.whatBonus(Bot.OurTerritories().First()));
+            var hardestTerr = Bot.OurTerritories().First();
             foreach(var terr in territories)
             {
                 int armiesNeeded = Bot.leftToComplete(Bot.whatBonus(terr));
-                if (armiesNeeded < easiest)
+                if (armiesNeeded > hardest)
                 {
-                    easiest = armiesNeeded;
+                    hardest = armiesNeeded;
+                    hardestTerr = terr;
                 }
             }
-            territories.RandomizeOrder();
+
+
             return territories;
+        }
+
+        public List<TerritoryIDType> turnOneDeploys()
+        {
+            var territories = Bot.OurTerritories();
+            int hardest = Bot.leftToComplete(Bot.whatBonus(Bot.OurTerritories().First()));
+            var hardestTerr = Bot.OurTerritories().First();
+            var secondHardestTerr = Bot.OurTerritories().ExceptOne(hardestTerr).First(); // Starts as Second
+            foreach (var terr in territories)
+            {
+                int armiesNeeded = Bot.leftToComplete(Bot.whatBonus(terr));
+                if (armiesNeeded > hardest)
+                {
+                    hardest = armiesNeeded;
+                    secondHardestTerr = hardestTerr;
+                    hardestTerr = terr;
+                }
+            }
+            List<TerritoryIDType> deploys = new List<TerritoryIDType>();
+            deploys.Add(hardestTerr);
+            deploys.Add(secondHardestTerr);
+            return deploys;
         }
     }
 }
